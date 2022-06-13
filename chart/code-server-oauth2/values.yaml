@@ -21,7 +21,7 @@ config:
 codeServer:
   containerName: code-server
   image:
-    repository: szymonrychu/kubernetes-code-server
+    repository: szymonrychu/code-server-oauth2
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
