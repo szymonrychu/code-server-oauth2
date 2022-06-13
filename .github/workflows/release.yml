@@ -18,6 +18,7 @@ env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   CONTAINER_REGISTRY: szymonrychu
+  CENTRAL_REPOSITORY: szymonrychu/helmfile-cluster
 
 jobs:
   release:
@@ -88,6 +89,23 @@ jobs:
         git add -A
         git commit -m "Release ${CHART_NAME} ${CHART_VERSION}"
         git push origin ${CHART_GIT_BRANCH}
+
+    - name: Refresh central repo
+      run: |
+        set -e
+
+        git clone https://x-access-token:${BOT_TOKEN}@github.com/${CENTRAL_REPOSITORY}.git /tmp/central-repo
+        cd /tmp/central-repo
+
+        yq e ".releases[] | select(.name == \"code-server\") | .version = \"${CHART_VERSION}\"" helmfiles/coding/helmfile.yaml
+
+        git config --global user.email "${BOT_EMAIL}"
+        git config --global user.name "${BOT_USERNAME}"
+
+        git add helmfiles/coding/helmfile.yaml
+        git commit -m "'${CHART_NAME}' release 'code-server' update to '${CHART_VERSION}'"
+
+        git push origin master
 
     - name: Create GH Release
       uses: notlmn/release-with-changelog@v3
