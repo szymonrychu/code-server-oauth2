@@ -46,8 +46,8 @@ jobs:
           echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
           echo "LATEST_REPO_TAG=${LATEST_REPO_TAG}" >> $GITHUB_ENV
 
-          sudo wget https://github.com/mikefarah/yq/releases/download/3.4.0/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq 
 
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
@@ -55,8 +55,8 @@ jobs:
         run: |
           set -e
           cd chart
-          yq w -i ${CHART_NAME}/Chart.yaml version ${CHART_VERSION}
-          yq w -i ${CHART_NAME}/Chart.yaml appVersion ${CONTAINER_VERSION}
+          yq e -i ".version = \"${CHART_VERSION}\"" ${CHART_NAME}/Chart.yaml
+          yq e -i ".appVersion = \"${CONTAINER_VERSION}\""  ${CHART_NAME}/Chart.yaml
 
       - name: Build, tag, and push panel image to DockerHub
         run: |
